@@ -4,7 +4,9 @@ import WorkletEventHandler from './WorkletEventHandler';
 import { startMapper, stopMapper, makeMutable, makeRemote } from './core';
 import updateProps from './UpdateProps';
 import { initialUpdaterRun } from './animations';
-import { getTag } from './NativeMethods';
+import { getTag } from './NativeMethods'
+import { reanimatedNativeAvailable } from './NativeReanimated';
+import JSReanimated from './JSReanimated';
 
 export function useSharedValue(init) {
   const ref = useRef(null);
@@ -33,9 +35,9 @@ export function useMapper(fun, inputs = [], outputs = [], dependencies = []) {
 export function useEvent(handler, eventNames = [], rebuild = false) {
   const initRef = useRef(null);
   if (initRef.current === null) {
-    initRef.current = new WorkletEventHandler(handler, eventNames);
-  } else if (rebuild) {
-    initRef.current.worklet = handler;
+    initRef.current = reanimatedNativeAvailable
+      ? new WorkletEventHandler(handler, eventNames)
+      : JSReanimated.createJsEventHandler(handler);
   }
   return initRef.current;
 }
